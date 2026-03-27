@@ -1,0 +1,7 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Expose the Laravel app from /public while keeping clean URLs.
+    RewriteCond %{REQUEST_URI} !^/rendicion-cuentas/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
