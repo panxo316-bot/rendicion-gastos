@@ -60,7 +60,7 @@ class FinanceController extends Controller
                 'link_drive' => $linkDrive,
             ]);
 
-            return response()->json(['ok' => true, 'id' => $newId, 'link_drive' => $linkDrive]);
+            return response()->json(['ok' => true, 'id' => $newId, 'fecha_pago' => $fecha, 'link_drive' => $linkDrive]);
         } catch (Throwable $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
         }

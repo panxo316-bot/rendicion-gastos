@@ -229,7 +229,7 @@ function renderCuotas() {
             if (pago) {
                 recaudadoTotal += parseFloat(pago.monto);
                 if (canVoid) {
-                    tr += `<td class="paid" onclick="openPagoModal('${f.id}', '${mesStr}', '${escapeHtml(f.n_alumno)}', true, '${pago.id}', ${pago.monto})">✓ Pagado</td>`;
+                    tr += `<td class="paid" onclick="openPagoModal('${f.id}', '${mesStr}', '${escapeHtml(f.n_alumno)}', true, '${pago.id}', ${pago.monto}, '${escapeHtml(pago.fecha_pago || '')}', '${escapeHtml(pago.link_drive || '')}')">✓ Pagado</td>`;
                 } else {
                     tr += `<td class="paid" style="cursor:default">✓ Pagado</td>`;
                 }
@@ -254,7 +254,7 @@ function renderCuotas() {
 // ====================
 let currentPagoId = null;
 
-window.openPagoModal = function (familiaId, mesStr, alumnoName, isPaid, pagoId = null, montoPagado = 0) {
+window.openPagoModal = function (familiaId, mesStr, alumnoName, isPaid, pagoId = null, montoPagado = 0, fechaPago = '', linkDrive = '') {
     const [y, m] = mesStr.split('-');
     const labelMes = `${MONTH_NAMES[parseInt(m) - 1]} ${y}`;
 
@@ -265,6 +265,7 @@ window.openPagoModal = function (familiaId, mesStr, alumnoName, isPaid, pagoId =
 
     const btnSub = document.getElementById('btn-confirm-pago');
     const btnDel = document.getElementById('btn-delete-pago');
+    const detalleDiv = document.getElementById('pago-detalle-pago');
 
     if (isPaid) {
         document.getElementById('pago-monto').value = montoPagado;
@@ -272,6 +273,20 @@ window.openPagoModal = function (familiaId, mesStr, alumnoName, isPaid, pagoId =
         btnSub.style.display = 'none';
         btnDel.style.display = 'block';
         btnDel.innerHTML = 'Anular Pago';
+
+        // Show payment date and receipt link
+        if (fechaPago) {
+            document.getElementById('pago-fecha-display').textContent = fechaPago;
+        } else {
+            document.getElementById('pago-fecha-display').textContent = '—';
+        }
+        if (linkDrive) {
+            document.getElementById('pago-link-display').href = linkDrive;
+            document.getElementById('pago-link-container').style.display = '';
+        } else {
+            document.getElementById('pago-link-container').style.display = 'none';
+        }
+        detalleDiv.style.display = 'block';
     } else {
         document.getElementById('pago-monto').value = configuracion.monto;
         document.getElementById('pago-comprobante').value = '';
@@ -279,6 +294,7 @@ window.openPagoModal = function (familiaId, mesStr, alumnoName, isPaid, pagoId =
         btnSub.style.display = 'block';
         btnDel.style.display = 'none';
         btnSub.innerHTML = 'Confirmar Pago';
+        detalleDiv.style.display = 'none';
     }
 
     pagoModal.style.display = 'flex';
@@ -320,7 +336,7 @@ pagoForm.addEventListener('submit', async (e) => {
             toast('Pago registrado ✅');
             pagoModal.style.display = 'none';
             // Store local mock and re-render without full refresh to feel instant
-            pagos.push({ id: json.id, id_familia: fId, mes: mes, monto: monto, link_drive: json.link_drive });
+            pagos.push({ id: json.id, id_familia: fId, mes: mes, monto: monto, fecha_pago: json.fecha_pago || '', link_drive: json.link_drive });
             renderCuotas();
         } else throw new Error(json.error);
     } catch (err) {

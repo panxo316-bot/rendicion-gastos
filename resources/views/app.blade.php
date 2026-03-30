@@ -340,6 +340,10 @@
         </div>
         <div class="modal-body" style="margin-top:1rem;">
             <p id="pago-info-text" style="color:var(--text-secondary); margin-bottom:1rem;">Mes: <strong>--</strong> | Alumno: <strong>--</strong></p>
+            <div id="pago-detalle-pago" style="display:none; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; padding:0.75rem 1rem; margin-bottom:1rem; font-size:0.85rem;">
+                <p style="margin:0 0 0.4rem">📅 Pagado el: <strong id="pago-fecha-display">--</strong></p>
+                <p style="margin:0" id="pago-link-container">📎 Comprobante: <a id="pago-link-display" href="#" target="_blank" style="color:var(--accent)">Ver comprobante</a></p>
+            </div>
             <form id="pago-form">
                 <input type="hidden" id="pago-familia-id">
                 <input type="hidden" id="pago-mes">
