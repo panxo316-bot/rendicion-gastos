@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('perfiles', function (Blueprint $table) {
             $table->string('id', 36)->primary();
             $table->string('nombre');
-            $table->text('permisos')->nullable();
+            $table->json('permisos')->nullable();
             $table->timestamps();
         });
     }
