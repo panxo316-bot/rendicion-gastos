@@ -1,0 +1,38 @@
+services:
+  - type: web
+    name: rendicion-cuentas
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: RendicionCuentas
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        fromService:
+          type: web
+          name: rendicion-cuentas
+          property: host
+      - key: GOOGLE_SCRIPT_URL
+        sync: false # Set this manually in the Render dashboard
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DB_CONNECTION
+        value: sqlite
+      - key: SESSION_DRIVER
+        value: file
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: PORT
+        value: "10000"
+    disk:
+      name: sqlite-data
+      mountPath: /var/www/html/database
+      sizeGB: 1
