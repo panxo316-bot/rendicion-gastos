@@ -13,6 +13,7 @@ use App\Models\Pago;
 use App\Services\GoogleSheetsGateway;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -26,7 +27,7 @@ class FinanceController extends Controller
         try {
             $gastos  = Gasto::orderBy('created_at', 'desc')->get();
             $pagos   = Pago::orderBy('created_at', 'desc')->get();
-            $familias = Familia::all();
+            $familias = $this->sortFamiliasByPrimerApellido(Familia::all());
             $config  = Configuracion::first();
 
             return response()->json([
@@ -191,5 +192,37 @@ class FinanceController extends Controller
         }
 
         throw new RuntimeException('No fue posible subir el comprobante a Google Drive. Detalle GAS: ' . $gasError);
+    }
+
+    private function sortFamiliasByPrimerApellido(Collection $familias): Collection
+    {
+        return $familias
+            ->sortBy(function (Familia $familia) {
+                $apellido = $this->getPrimerApellido((string) ($familia->n_alumno ?? ''));
+
+                return mb_strtolower($apellido . ' ' . (string) ($familia->n_alumno ?? ''));
+            }, SORT_NATURAL)
+            ->values();
+    }
+
+    private function getPrimerApellido(string $nombreCompleto): string
+    {
+        $partes = preg_split('/\s+/', trim($nombreCompleto)) ?: [];
+        $partes = array_values(array_filter($partes, static fn (string $p) => $p !== ''));
+        $total = count($partes);
+
+        if ($total === 0) {
+            return '';
+        }
+
+        if ($total === 1) {
+            return $partes[0];
+        }
+
+        if ($total === 2) {
+            return $partes[1];
+        }
+
+        return $partes[$total - 2];
     }
 }

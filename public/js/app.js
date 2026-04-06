@@ -53,6 +53,37 @@ const familiasTbody = document.getElementById('familias-tbody');
 // MESES
 const MONTH_NAMES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
+function getPrimerApellido(nombreCompleto = '') {
+    const partes = nombreCompleto
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean);
+
+    if (partes.length === 0) return '';
+    if (partes.length === 1) return partes[0];
+    if (partes.length === 2) return partes[1];
+
+    // Convencion habitual: Nombres + ApellidoPaterno + ApellidoMaterno.
+    return partes[partes.length - 2];
+}
+
+function compareFamiliasByPrimerApellido(a, b) {
+    const apellidoA = getPrimerApellido(a?.n_alumno || '');
+    const apellidoB = getPrimerApellido(b?.n_alumno || '');
+
+    if (!apellidoA && apellidoB) return 1;
+    if (apellidoA && !apellidoB) return -1;
+
+    const byApellido = apellidoA.localeCompare(apellidoB, 'es', { sensitivity: 'base' });
+    if (byApellido !== 0) return byApellido;
+
+    return (a?.n_alumno || '').localeCompare((b?.n_alumno || ''), 'es', { sensitivity: 'base' });
+}
+
+function getFamiliasOrdenadas() {
+    return [...familias].sort(compareFamiliasByPrimerApellido);
+}
+
 // ====================
 // NAVEGACIÓN
 // ====================
@@ -142,8 +173,9 @@ function generarFamiliasVacias() {
 function renderConfig() {
     document.getElementById('cfg-anio').value = configuracion.anio;
     document.getElementById('cfg-monto').value = configuracion.monto;
+    const familiasOrdenadas = getFamiliasOrdenadas();
     
-    familiasTbody.innerHTML = familias.map((f, i) => `
+    familiasTbody.innerHTML = familiasOrdenadas.map((f, i) => `
         <tr>
             <td style="text-align:center">${i + 1}</td>
             <td><input type="text" class="inp-alumno" data-id="${f.id}" value="${escapeHtml(f.n_alumno || '')}"></td>
@@ -204,6 +236,7 @@ function renderCuotas() {
     configuracion = normalizeConfig(configuracion);
     lblMontoCuota.textContent = `$${formatNumber(configuracion.monto)}`;
     ingresosYear.textContent = configuracion.anio;
+    const familiasOrdenadas = getFamiliasOrdenadas();
 
     let ths = `<th class="sticky-col" style="width:40px">N°</th><th class="sticky-col">Alumno / Apoderado</th>`;
     let monthsToRender = [];
@@ -216,7 +249,7 @@ function renderCuotas() {
     let tbodyHTML = "";
     let recaudadoTotal = 0;
 
-    familias.forEach((f, i) => {
+    familiasOrdenadas.forEach((f, i) => {
         let tr = `<tr><td class="sticky-col">${i + 1}</td><td class="sticky-col" style="text-align:left; font-size:0.75rem;"><strong>${escapeHtml(f.n_alumno)}</strong><br><span style="color:var(--text-muted)">${escapeHtml(f.n_apoderado)}</span></td>`;
 
         const canRegister = typeof hasPermiso === 'function' && hasPermiso('pagos_registrar');
